@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { useHistory } from 'react-router-dom';
 import { uniqueId } from 'lodash';
 
 import filesize from 'filesize';
 
+import { useHistory } from 'react-router-dom';
 import Header from '../../components/Header';
 import FileList from '../../components/FileList';
 import Upload from '../../components/Upload';
@@ -14,31 +14,29 @@ import alert from '../../assets/alert.svg';
 import api from '../../services/api';
 
 interface FileProps {
-  id: string;
   file: File;
   name: string;
   readableSize: string;
-  preview: string;
-  progress: number;
-  uploaded: boolean;
-  error: boolean;
-  url: string;
 }
 
 const Import: React.FC = () => {
   const [uploadedFiles, setUploadedFiles] = useState<FileProps[]>([]);
-  const history = useHistory();  // eslint-disable-next-line
+  const history = useHistory();
 
   async function handleUpload(): Promise<void> {
     const data = new FormData();
 
-    // TODO
+    if (!uploadedFiles.length) return;
 
-    data.append('file', {uploadedFiles.file});
+    const file = uploadedFiles[0];
+
+    data.append('file', file.file, file.name);
+
     try {
       await api.post('/transactions/import', data);
+      history.push('/');
     } catch (err) {
-      // console.log(err.response.error);
+      console.log(err.response.error);
     }
   }
 
@@ -48,26 +46,10 @@ const Import: React.FC = () => {
       id: uniqueId(),
       name: file.name,
       readableSize: filesize(file.size),
-      preview: URL.createObjectURL(file),
-      progress: 0,
-      uploaded: false,
-      error: false,
-      url: '',
     }));
 
-    setUploadedFiles(uploadedFiles.concat(uploadFiles));
-    // uploadFiles.forEach(updateFile);
+    setUploadedFiles(uploadFiles);
   }
-
-  // updateFile = (id, data) => {
-  //   setUploadedFiles([
-  //     uploadedFiles: setUploadedFiles.map((uploadedFile) => {
-  //       return id === uploadedFile.id
-  //         ? { ...uploadedFile, ...data }
-  //         : uploadedFile;
-  //     ]),
-  //   });
-  // };
 
   return (
     <>
